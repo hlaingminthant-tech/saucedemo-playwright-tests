@@ -3,11 +3,7 @@
 <!-- CI badge: replace <OWNER>/<REPO> with your GitHub path -->
 ![CI](https://github.com/hlaingminthant-tech/saucedemo-playwright-tests/actions/workflows/playwright.yml/badge.svg)
 
-This repository is a compact QA automation demo built with Playwright and TypeScript. It is designed to show practical testing patterns that are easy to explain in a resume or portfolio.
-
-## Badges
-
-- **CI:** Use the workflow badge above (replace `<OWNER>/<REPO>` with your GitHub repository). When the repo is pushed to GitHub the badge shows the current status automatically.
+This repository is a compact QA automation demo built with Playwright and TypeScript.
 
 ## What it demonstrates
 
@@ -53,7 +49,3 @@ Open the HTML report after a run:
 ```bash
 npm run report
 ```
-
-## Resume-friendly highlights
-
-This project shows that you can build maintainable UI tests, create reusable abstractions, validate common error paths, and run the suite in CI. It also gives you a clean story around test architecture rather than just a set of scripts.
