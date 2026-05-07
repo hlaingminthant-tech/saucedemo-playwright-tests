@@ -1,7 +1,7 @@
 # Sauce Demo Playwright QA Suite
 
 <!-- CI badge: replace <OWNER>/<REPO> with your GitHub path -->
-![CI](https://github.com/<OWNER>/<REPO>/actions/workflows/playwright.yml/badge.svg)
+![CI](https://github.com/hlaingminthant-tech/saucedemo-playwright-tests/actions/workflows/playwright.yml/badge.svg)
 
 This repository is a compact QA automation demo built with Playwright and TypeScript. It is designed to show practical testing patterns that are easy to explain in a resume or portfolio.
 
