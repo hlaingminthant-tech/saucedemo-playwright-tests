@@ -1,5 +1,5 @@
 import { test, expect } from './fixtures';
-import { products } from './test-data';
+import { ProductsFactory } from './factory';
 
 test.describe('Inventory flow', () => {
   test('adds a product to cart and shows the badge', async ({ inventoryPage }) => {
@@ -8,7 +8,7 @@ test.describe('Inventory flow', () => {
     await expect(inventoryPage.cartBadge).toHaveText('1');
 
     await inventoryPage.openCart();
-    await inventoryPage.expectCartContainsItem(products.backpack);
+    await inventoryPage.expectCartContainsItem(ProductsFactory.backpack);
   });
 
   test('sorts products alphabetically', async ({ inventoryPage }) => {

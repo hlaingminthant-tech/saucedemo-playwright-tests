@@ -1,25 +1,25 @@
 import { test, expect } from '@playwright/test';
 import { LoginPage } from '../pages/LoginPage';
-import { users, validationMessages } from './test-data';
+import { UsersFactory, ValidationMessages } from './factory';
 
 const invalidLoginCases = [
   {
     name: 'locked out user',
-    username: users.lockedOut.username,
-    password: users.lockedOut.password,
-    message: validationMessages.lockedOut,
+    username: UsersFactory.lockedOut().username,
+    password: UsersFactory.lockedOut().password,
+    message: ValidationMessages.lockedOut,
   },
   {
     name: 'wrong password',
-    username: users.wrongPassword.username,
-    password: users.wrongPassword.password,
-    message: validationMessages.wrongPassword,
+    username: UsersFactory.wrongPassword().username,
+    password: UsersFactory.wrongPassword().password,
+    message: ValidationMessages.wrongPassword,
   },
   {
     name: 'missing username',
-    username: users.missingUsername.username,
-    password: users.missingUsername.password,
-    message: validationMessages.missingUsername,
+    username: UsersFactory.missingUsername().username,
+    password: UsersFactory.missingUsername().password,
+    message: ValidationMessages.missingUsername,
   },
 ] as const;
 
@@ -33,7 +33,8 @@ test.describe('Login functionality', () => {
     });
 
     await test.step('Sign in with valid credentials', async () => {
-      await loginPage.login(users.standard.username, users.standard.password);
+      const std = UsersFactory.standard();
+      await loginPage.login(std.username, std.password);
     });
 
     await expect(page).toHaveURL(/inventory/);

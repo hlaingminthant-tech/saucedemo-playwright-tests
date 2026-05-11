@@ -49,6 +49,6 @@ export class InventoryPage {
   }
 
   async expectCartContainsItem(itemName: string) {
-    await expect(this.page.locator('.inventory_item_name')).toContainText(itemName);
+    await expect(this.inventoryItemNames).toContainText(itemName);
   }
 }
