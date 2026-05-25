@@ -26,3 +26,9 @@ export const validationMessages = {
   wrongPassword: 'Username and password do not match',
   missingUsername: 'Username is required',
 } as const;
+
+export const checkout = {
+  firstName: 'Test',
+  lastName: 'User',
+  postalCode: '12345',
+} as const;

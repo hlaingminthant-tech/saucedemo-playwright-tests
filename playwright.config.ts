@@ -11,6 +11,8 @@ import { defineConfig, devices } from '@playwright/test';
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
+const baseURL = process.env.BASE_URL ?? 'https://www.saucedemo.com';
+
 export default defineConfig({
   testDir: './tests',
   /* Run tests in files in parallel */
@@ -19,7 +21,7 @@ export default defineConfig({
   reporter: 'html',
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
-    baseURL: 'https://www.saucedemo.com',
+    baseURL,
     actionTimeout: 10000,   // each action gets 10s
     navigationTimeout: 30000, // page load gets 30s
     screenshot: 'only-on-failure',
