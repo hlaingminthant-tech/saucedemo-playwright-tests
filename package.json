@@ -6,7 +6,8 @@
   "scripts": {
     "test": "playwright test",
     "test:headed": "playwright test --headed",
-    "report": "playwright show-report"
+    "report": "playwright show-report",
+    "analytics": "node scripts/generate-report.js"
   },
   "keywords": [],
   "author": "",

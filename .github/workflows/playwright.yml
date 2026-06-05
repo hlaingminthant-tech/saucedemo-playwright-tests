@@ -1,47 +1,199 @@
 name: Playwright Tests
+
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main, master, develop ]
   pull_request:
-    branches: [ main, master ]
+    branches: [ main, master, develop ]
+
+env:
+  PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 0
+
 jobs:
   test:
+    name: Test (${{ matrix.shardIndex }}/${{ matrix.shardTotal }}) - ${{ matrix.browser }}
     timeout-minutes: 60
     runs-on: ubuntu-latest
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        # Parallel sharding - split tests across workers
+        shardIndex: [1, 2, 3, 4]
+        shardTotal: [4]
+        # Test against multiple browsers
+        browser: [chromium, firefox, webkit]
+    
     steps:
     - uses: actions/checkout@v4
+    
     - uses: actions/setup-node@v4
       with:
         node-version: lts/*
         cache: npm
+    
     - name: Install dependencies
       run: npm ci
+    
     - name: Install Playwright Browsers
-      run: npx playwright install --with-deps
-    - name: Run Playwright tests
-      run: npx playwright test
-    - uses: actions/upload-artifact@v4
-      if: ${{ !cancelled() }}
+      run: npx playwright install --with-deps ${{ matrix.browser }}
+    
+    - name: Run Playwright tests (Shard ${{ matrix.shardIndex }}/${{ matrix.shardTotal }})
+      run: npx playwright test --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }} --project=${{ matrix.browser }}
+    
+    - name: Generate test analytics
+      if: always()
+      run: node scripts/generate-report.js
+    
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v4
       with:
-        name: playwright-report
+        name: test-results-${{ matrix.browser }}-${{ matrix.shardIndex }}
+        path: test-results/
+        retention-days: 30
+    
+    - name: Upload Playwright report
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: playwright-report-${{ matrix.browser }}-${{ matrix.shardIndex }}
         path: playwright-report/
         retention-days: 30
 
-  deploy-pages:
+  report:
+    name: Publish Test Report
+    if: always()
     needs: test
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Download all test results
+      uses: actions/download-artifact@v4
+      with:
+        path: all-reports
+        pattern: test-results-*
+    
+    - name: Download Playwright reports
+      uses: actions/download-artifact@v4
+      with:
+        path: all-reports
+        pattern: playwright-report-*
+    
+    - name: Merge test results
+      run: |
+        mkdir -p merged-results
+        cp all-reports/test-results-*/results.json merged-results/ 2>/dev/null || true
+        cp all-reports/test-results-*/summary.json merged-results/ 2>/dev/null || true
+    
+    - name: Comment PR with test results
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          const summaryPath = 'merged-results/summary.json';
+          
+          if (fs.existsSync(summaryPath)) {
+            const summary = JSON.parse(fs.readFileSync(summaryPath, 'utf-8'));
+            const { stats, recommendations } = summary;
+            
+            let comment = `## 🧪 Test Results\n\n`;
+            comment += `| Metric | Value |\n`;
+            comment += `|--------|-------|\n`;
+            comment += `| ✅ Passed | ${stats.passed} |\n`;
+            comment += `| ❌ Failed | ${stats.failed} |\n`;
+            comment += `| ⏭️ Skipped | ${stats.skipped} |\n`;
+            comment += `| 📈 Pass Rate | ${stats.passRate}% |\n`;
+            comment += `| ⏱️ Duration | ${(stats.totalDuration / 1000).toFixed(2)}s |\n\n`;
+            
+            if (stats.flakyTests.length > 0) {
+              comment += `### ⚡ Flaky Tests\n`;
+              stats.flakyTests.forEach(test => {
+                comment += `- ${test.title} (${test.attempts} attempts)\n`;
+              });
+              comment += '\n';
+            }
+            
+            if (recommendations.length > 0) {
+              comment += `### 💡 Recommendations\n`;
+              recommendations.forEach(rec => {
+                comment += `- ${rec}\n`;
+              });
+            }
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+          }
+
+  deploy-pages:
+    name: Deploy Reports to GitHub Pages
+    needs: report
     runs-on: ubuntu-latest
     permissions:
       contents: write
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    
     steps:
-      - uses: actions/checkout@v4
-      - name: Download Playwright HTML report
-        uses: actions/download-artifact@v4
-        with:
-          name: playwright-report
-          path: playwright-report
-      - name: Deploy Playwright HTML report to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./playwright-report
+    - uses: actions/checkout@v4
+    
+    - name: Download Playwright reports
+      uses: actions/download-artifact@v4
+      with:
+        path: reports
+        pattern: playwright-report-*
+    
+    - name: Prepare reports for deployment
+      run: |
+        mkdir -p playwright-report
+        cp -r reports/playwright-report-*/* playwright-report/ 2>/dev/null || true
+    
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./playwright-report
+
+  notify-slack:
+    name: Notify Slack
+    if: failure() && github.event_name == 'push'
+    needs: test
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Send Slack notification
+      uses: slackapi/slack-github-action@v1.24.0
+      with:
+        webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
+        payload: |
+          {
+            "text": "❌ Playwright tests failed on ${{ github.ref }}",
+            "blocks": [
+              {
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "*Test Failure Alert*\n*Repository:* ${{ github.repository }}\n*Branch:* ${{ github.ref }}\n*Commit:* ${{ github.sha }}\n*Author:* ${{ github.actor }}"
+                }
+              },
+              {
+                "type": "actions",
+                "elements": [
+                  {
+                    "type": "button",
+                    "text": {
+                      "type": "plain_text",
+                      "text": "View Results"
+                    },
+                    "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                  }
+                ]
+              }
+            ]
+          }

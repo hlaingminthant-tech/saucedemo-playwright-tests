@@ -15,18 +15,27 @@ export default defineConfig({
   testDir: './tests',
   /* Run tests in files in parallel */
   fullyParallel: true,
+  /* Retry failed tests only on CI */
+  retries: process.env.CI ? 2 : 0,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: 'html',
+  reporter: [
+    ['html'],
+    ['json', { outputFile: 'test-results/results.json' }],
+    ['junit', { outputFile: 'test-results/junit.xml' }],
+    ['list'],
+    ...(process.env.CI ? [['github']] : []),
+  ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     baseURL: 'https://www.saucedemo.com',
-    actionTimeout: 10000,   // each action gets 10s
-    navigationTimeout: 30000, // page load gets 30s
+    actionTimeout: 10000,
+    navigationTimeout: 30000,
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
-    /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
   },
+  /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
+  outputDir: 'test-results/artifacts',
 
   /* Configure projects for major browsers */
   projects: [
