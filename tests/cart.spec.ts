@@ -3,7 +3,7 @@ import { CartPage } from '../pages/CartPage';
 import { CheckoutPage } from '../pages/CheckoutPage';
 import { products, checkout } from './test-data';
 
-test.describe('Cart and checkout edge cases', () => {
+test.describe('Cart tests', () => {
   test('removes item from cart and updates contents', async ({ inventoryPage, page }) => {
     // Add product to cart
     await inventoryPage.addBackpackToCart();
