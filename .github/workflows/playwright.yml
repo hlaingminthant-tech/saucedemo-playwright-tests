@@ -53,6 +53,14 @@ jobs:
         path: test-results/
         retention-days: 30
     
+    - name: Upload Allure results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: allure-results-${{ matrix.browser }}-${{ matrix.shardIndex }}
+        path: allure-results/
+        retention-days: 30
+    
     - name: Upload Playwright report
       if: always()
       uses: actions/upload-artifact@v4
@@ -85,8 +93,16 @@ jobs:
     - name: Merge test results
       run: |
         mkdir -p merged-results
+        mkdir -p merged-allure
         cp all-reports/test-results-*/results.json merged-results/ 2>/dev/null || true
         cp all-reports/test-results-*/summary.json merged-results/ 2>/dev/null || true
+        cp -r all-reports/test-results-*/allure-results/* merged-allure/ 2>/dev/null || true
+    
+    - name: Generate Allure report
+      if: always()
+      run: |
+        npm install --save-dev allure-commandline
+        npx allure generate merged-allure -o allure-report --clean 2>/dev/null || true
     
     - name: Comment PR with test results
       if: github.event_name == 'pull_request'
@@ -143,6 +159,12 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
+    - name: Download Allure reports
+      uses: actions/download-artifact@v4
+      with:
+        path: reports
+        pattern: allure-results-*
+    
     - name: Download Playwright reports
       uses: actions/download-artifact@v4
       with:
@@ -151,14 +173,51 @@ jobs:
     
     - name: Prepare reports for deployment
       run: |
-        mkdir -p playwright-report
-        cp -r reports/playwright-report-*/* playwright-report/ 2>/dev/null || true
+        mkdir -p reports-deploy/playwright
+        mkdir -p reports-deploy/allure
+        cp -r reports/playwright-report-*/* reports-deploy/playwright/ 2>/dev/null || true
+        cp -r reports/allure-results-*/* reports-deploy/allure/ 2>/dev/null || true
+    
+    - name: Generate Allure report from results
+      run: |
+        npm install --save-dev allure-commandline
+        npx allure generate reports-deploy/allure -o reports-deploy/allure-report --clean 2>/dev/null || true
+    
+    - name: Create index page
+      run: |
+        cat > reports-deploy/index.html << 'EOF'
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Test Reports</title>
+            <style>
+                body { font-family: Arial, sans-serif; margin: 40px; }
+                .report { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+                a { color: #0066cc; text-decoration: none; font-weight: bold; }
+                a:hover { text-decoration: underline; }
+            </style>
+        </head>
+        <body>
+            <h1>🧪 Test Reports Dashboard</h1>
+            <div class="report">
+                <h2>📊 Allure Report</h2>
+                <p>Beautiful timeline reports with trends and analytics</p>
+                <a href="./allure-report/index.html">View Allure Report →</a>
+            </div>
+            <div class="report">
+                <h2>🎭 Playwright Report</h2>
+                <p>Interactive HTML report with screenshots and videos</p>
+                <a href="./playwright/index.html">View Playwright Report →</a>
+            </div>
+        </body>
+        </html>
+        EOF
     
     - name: Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./playwright-report
+        publish_dir: ./reports-deploy
 
   notify-slack:
     name: Notify Slack

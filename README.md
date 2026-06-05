@@ -84,8 +84,24 @@ Produces a detailed analytics report showing:
 - **Failed test details** - root cause analysis
 - Smart recommendations for improvements
 
+### View Allure Report (Trend Dashboard)
+```bash
+npm run allure:show
+```
+
+Generates and opens a beautiful Allure report with:
+- 📈 Test execution timeline
+- 📊 Historical trends and graphs
+- 🐛 Failure analytics
+- ⏱️ Performance metrics
+- 📉 Flakiness trends over time
+
+**Note:** After first test run, Allure data is collected automatically. This command generates the dashboard.
+
 ### CI/CD Reports
-- **GitHub Pages**: Deployed to your repo's GitHub Pages after successful main branch builds
+- **GitHub Pages Dashboard**: Index page with links to both reports
+- **Allure Report**: Beautiful trend dashboards deployed on GitHub Pages
+- **Playwright Report**: Interactive HTML with screenshots/videos
 - **Pull Request Comments**: Automatic test result summaries in PR discussions
 - **Slack Notifications**: Alerts on test failures (configure `SLACK_WEBHOOK_URL` secret)
 - **JUnit XML**: Integration with most CI systems via `test-results/junit.xml`
