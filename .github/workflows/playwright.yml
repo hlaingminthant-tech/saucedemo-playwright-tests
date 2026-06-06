@@ -31,39 +31,28 @@ jobs:
       with:
         node-version: lts/*
         cache: npm
-    
-    - name: Install dependencies
-      run: npm ci
-    
-    - name: Install Playwright Browsers
-      run: npx playwright install --with-deps ${{ matrix.browser }}
-    
-    - name: Run Playwright tests (Shard ${{ matrix.shardIndex }}/${{ matrix.shardTotal }})
-      run: npx playwright test --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }} --project=${{ matrix.browser }}
-    
-    - name: Generate test analytics
-      if: always()
-      run: node scripts/generate-report.js
-    
-    - name: Upload test results
-      if: always()
-      uses: actions/upload-artifact@v4
+    - name: Cache npm
+      uses: actions/cache@v4
       with:
-        name: test-results-${{ matrix.browser }}-${{ matrix.shardIndex }}
-        path: test-results/
-        retention-days: 30
-    
-    - name: Upload Allure results
-      if: always()
-      uses: actions/upload-artifact@v4
+        path: ~/.npm
+        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-
+
+    - name: Cache Playwright browsers
+      uses: actions/cache@v4
       with:
-        name: allure-results-${{ matrix.browser }}-${{ matrix.shardIndex }}
-        path: allure-results/
-        retention-days: 30
-    
-    - name: Upload Playwright report
-      if: always()
-      uses: actions/upload-artifact@v4
+        path: |
+          ~/.cache/ms-playwright
+          ~/.cache/playwright
+        key: ${{ runner.os }}-playwright-browsers-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-playwright-browsers-
+
+    - name: Install & run CI script
+      run: npm run ci
+    - uses: actions/upload-artifact@v4
+      if: ${{ !cancelled() }}
       with:
         name: playwright-report-${{ matrix.browser }}-${{ matrix.shardIndex }}
         path: playwright-report/

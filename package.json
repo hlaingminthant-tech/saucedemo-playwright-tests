@@ -6,10 +6,10 @@
   "scripts": {
     "test": "playwright test",
     "test:headed": "playwright test --headed",
+    "test:failure-demo": "playwright test tests/failure-demo.spec.ts",
     "report": "playwright show-report",
-    "analytics": "node scripts/generate-report.js",
-    "allure:report": "allure generate allure-results -o allure-report --clean",
-    "allure:show": "npm run allure:report && allure open allure-report"
+    "install-browsers": "npx playwright install",
+    "ci": "npm ci && npx playwright install && npx playwright test --reporter=html"
   },
   "keywords": [],
   "author": "",
@@ -17,8 +17,6 @@
   "type": "commonjs",
   "devDependencies": {
     "@playwright/test": "^1.60.0",
-    "@types/node": "^25.6.0",
-    "allure-commandline": "^2.42.0",
-    "allure-playwright": "^3.9.0"
+    "@types/node": "^25.6.0"
   }
 }

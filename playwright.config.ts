@@ -11,12 +11,13 @@ import { defineConfig, devices } from '@playwright/test';
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
+const baseURL = process.env.BASE_URL ?? 'https://www.saucedemo.com';
+
 export default defineConfig({
   testDir: './tests',
   /* Run tests in files in parallel */
   fullyParallel: true,
-  /* Retry failed tests only on CI */
-  retries: process.env.CI ? 2 : 0,
+  retries: 1,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: [
     ['html'],
@@ -28,9 +29,9 @@ export default defineConfig({
   ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
-    baseURL: 'https://www.saucedemo.com',
-    actionTimeout: 10000,
-    navigationTimeout: 30000,
+    baseURL,
+    actionTimeout: 10000,   // each action gets 10s
+    navigationTimeout: 30000, // page load gets 30s
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
     trace: 'on-first-retry',
