@@ -44,6 +44,12 @@ Run tests headed (visible browser):
 npm run test:headed
 ```
 
+Run the reporting demo suite to see an intentional failure, a flaky retry example, and a timeout failure:
+
+```bash
+npm run test:failure-demo
+```
+
 Open the HTML report after a run:
 
 ```bash
