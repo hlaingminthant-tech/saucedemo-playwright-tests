@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-test.describe('API smoke checks', () => {
+test.describe('API smoke checks @api', () => {
   test('jsonplaceholder post endpoint returns a stable contract', async ({ request }) => {
     const response = await request.get('https://jsonplaceholder.typicode.com/posts/1');
 

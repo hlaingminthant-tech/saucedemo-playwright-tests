@@ -1,4 +1,4 @@
-// Small test-data factory for credentials and product names
+// Reusable test data for UI and setup specs.
 export const UsersFactory = {
   standard() {
     return { username: 'standard_user', password: 'secret_sauce' };
@@ -23,14 +23,26 @@ export const ProductsFactory = {
   backpack: 'Sauce Labs Backpack',
 };
 
+export const CheckoutFactory = {
+  validCustomer() {
+    return {
+      firstName: 'QA',
+      lastName: 'Automation',
+      postalCode: '10110',
+    };
+  },
+};
+
 export const ValidationMessages = {
   lockedOut: 'locked out',
   wrongPassword: 'Username and password do not match',
   missingUsername: 'Username is required',
+  missingFirstName: 'First Name is required',
 };
 
 export default {
   UsersFactory,
   ProductsFactory,
+  CheckoutFactory,
   ValidationMessages,
 };

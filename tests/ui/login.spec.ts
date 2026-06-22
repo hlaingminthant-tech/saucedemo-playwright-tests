@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
-import { LoginPage } from '../pages/LoginPage';
-import { UsersFactory, ValidationMessages } from './factory';
+import { LoginPage } from '../../pages/LoginPage';
+import { UsersFactory, ValidationMessages } from '../support/test-data';
 
 const invalidLoginCases = [
   {
@@ -23,7 +23,15 @@ const invalidLoginCases = [
   },
 ] as const;
 
-test.describe('Login functionality', () => {
+test.describe('Login functionality @smoke', () => {
+  test('login page displays the expected entry points', async ({ page }) => {
+    await page.goto('/');
+
+    await expect(page).toHaveTitle(/Swag Labs/);
+    await expect(page.getByPlaceholder('Username')).toBeVisible();
+    await expect(page.getByPlaceholder('Password')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Login' })).toBeVisible();
+  });
 
   test('standard user can log in successfully', async ({ page }) => {
     const loginPage = new LoginPage(page);

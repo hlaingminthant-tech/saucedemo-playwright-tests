@@ -1,5 +1,5 @@
 import { Page } from '@playwright/test';
-import { test, expect } from './fixtures';
+import { test, expect } from '../support/fixtures';
 
 const screenshotOptions = {
   fullPage: true,
@@ -11,7 +11,7 @@ async function expectPageSnapshot(page: Page, snapshotName: string) {
   await expect(page).toHaveScreenshot(snapshotName, screenshotOptions);
 }
 
-test.describe('Visual regression', () => {
+test.describe('Visual regression @visual', () => {
   test.use({
     viewport: { width: 1280, height: 720 },
     colorScheme: 'light',

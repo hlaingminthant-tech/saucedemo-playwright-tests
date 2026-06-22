@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('API contract checks', () => {
+test.describe('API contract checks @api', () => {
   test('jsonplaceholder post contract', async ({ request }) => {
     const res = await request.get('https://jsonplaceholder.typicode.com/posts/1');
     expect(res.ok()).toBeTruthy();

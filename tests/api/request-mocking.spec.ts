@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('API mocking examples', () => {
+test.describe('API mocking examples @api', () => {
   test('mock a fetch response and assert page receives mocked data', async ({ page }) => {
     // Intercept the fetch to /api/example and return a mocked JSON
     await page.route('**/api/example', (route) => {

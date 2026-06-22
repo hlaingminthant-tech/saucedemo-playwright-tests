@@ -3,45 +3,32 @@
 <!-- CI badge: replace <OWNER>/<REPO> with your GitHub path -->
 ![CI](https://github.com/hlaingminthant-tech/saucedemo-playwright-tests/actions/workflows/playwright.yml/badge.svg)
 
-This repository is a compact QA automation demo built with Playwright and TypeScript, showcasing enterprise-grade testing practices.
+This repository is a compact QA automation demo built with Playwright and TypeScript.
 
 ## What it demonstrates
 
-### Core Testing Practices
 - Page Object Model for UI reuse and cleaner specs.
 - Custom fixtures for authenticated setup.
+- Reused authenticated browser state with Playwright `storageState`.
 - Data-driven validation for login edge cases.
 - Shared test data for credentials and product names.
-- Real user flow coverage for inventory and cart behavior.
+- Real user flow coverage for inventory, cart, checkout, and logout behavior.
+- Accessibility smoke checks with axe.
+- Browser network mocking for resilient UI scenarios.
+- Visual regression testing with Playwright snapshots.
 - API smoke testing with Playwright's request fixture.
-
-### Advanced CI/CD & Reporting (Enterprise-Grade)
-- **Parallel Test Execution** - Tests sharded across 4 workers running simultaneously, supporting multiple browsers (Chromium, Firefox, WebKit)
-- **Smart Retries** - Automatic retry logic to distinguish flaky tests from real failures
-- **Multi-Browser Testing** - Full test coverage across 3 major browsers in parallel
-- **Test Analytics** - Custom reporting with flakiness detection and performance metrics
-- **PR Integration** - Automatic test result comments on pull requests with pass rates and recommendations
-- **Slack Alerts** - Real-time failure notifications to team Slack
-- **GitHub Pages Reports** - Deployed HTML reports with videos and screenshots on failures
-- **JSON & JUnit Reporting** - Integration with CI systems and analytics platforms
+- CI automation with a browser matrix, report artifacts, and cross-repo release triggers.
+- Built-in Playwright HTML reports with screenshots, videos, and traces on failure.
+- CI-only retries and separate Chromium, Firefox, and WebKit jobs.
 
 ## Project structure
 
-```
-├── pages/               # Page Object Model classes
-├── tests/
-│   ├── login.spec.ts           # Login edge cases
-│   ├── inventory.spec.ts        # Shopping flow & sorting
-│   ├── api.spec.ts              # API contract testing
-│   ├── smoke.spec.ts            # Smoke tests
-│   ├── fixtures.ts              # Custom authenticated fixture
-│   └── test-data.ts             # Shared credentials & data
-├── scripts/
-│   └── generate-report.js       # Custom analytics & flakiness detection
-├── .github/workflows/
-│   └── playwright.yml           # Enhanced CI/CD pipeline
-└── playwright.config.ts         # Playwright configuration
-```
+- `pages/` contains page objects, while `pages/components/` contains UI shared across pages.
+- `tests/ui/` groups browser tests by product feature: login, inventory, cart, checkout, accessibility, network resilience, and visual regression.
+- `tests/api/` contains API smoke, contract, and request-mocking specs with behavior-specific filenames.
+- `tests/setup/` creates reusable authenticated storage state before dependent browser projects run.
+- `tests/support/` centralizes custom fixtures and reusable test-data factories.
+- `.github/workflows/playwright.yml` runs the suite on push, PR, manual dispatch, and a release dispatch from the main repo.
 
 ## Quick start
 
@@ -63,9 +50,52 @@ Run tests headed (visible browser):
 npm run test:headed
 ```
 
-## Reporting & Analytics
+Run focused suites by tag:
 
-### View HTML Report
+```bash
+npm run test:smoke
+npm run test:regression
+npm run test:ui
+npm run test:api
+npm run test:visual
+```
+
+Target another Sauce Demo-compatible environment:
+
+```bash
+BASE_URL=https://www.saucedemo.com npm test
+```
+
+Open the HTML report after a run:
+
 ```bash
 npm run report
 ```
+
+## Test strategy
+
+This suite is designed as a compact QA automation portfolio project. It balances happy-path business coverage with targeted negative cases, visual checks, accessibility smoke tests, API contract checks, and browser network mocking.
+
+UI tests use stable user-facing locators where possible and page objects/components for repeated workflows. Authenticated inventory, cart, checkout, visual, and accessibility specs reuse a setup-generated `storageState` file so the suite does not repeat login in every test.
+
+Failure evidence is enabled in Playwright config: screenshots are captured only on failure, videos are retained on failure, and traces are collected on first retry. CI runs Chromium, Firefox, and WebKit separately and uploads each built-in HTML report as an artifact.
+
+Out of scope: this project does not attempt exhaustive Sauce Demo coverage, load testing, real payment validation, or backend ownership checks. The goal is to show maintainable automation design and useful risk-based coverage.
+
+## Main repo trigger
+
+This project can be triggered from the main application repo when a new release is published.
+
+The main repo workflow should send a `repository_dispatch` event to this repo with the event type `main_repo_release` and a payload such as:
+
+```json
+{
+	"event_type": "main_repo_release",
+	"client_payload": {
+		"source_repo": "owner/main-repo",
+		"release_tag": "v1.2.3"
+	}
+}
+```
+
+After that dispatch arrives, this repo runs the Playwright suite and publishes the HTML report automatically.

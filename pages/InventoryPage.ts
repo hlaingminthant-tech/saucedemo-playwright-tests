@@ -7,14 +7,6 @@ export class InventoryPage {
     return this.page.locator('.title');
   }
 
-  get cartLink() {
-    return this.page.locator('.shopping_cart_link');
-  }
-
-  get cartBadge() {
-    return this.page.locator('.shopping_cart_badge');
-  }
-
   get sortSelect() {
     return this.page.getByRole('combobox');
   }
@@ -23,32 +15,52 @@ export class InventoryPage {
     return this.page.locator('.inventory_item_name');
   }
 
-  get addBackpackButton() {
-    return this.page.getByRole('button', { name: 'Add to cart' }).first();
+  get inventoryItemPrices() {
+    return this.page.locator('.inventory_item_price');
   }
 
   async expectLoaded() {
     await expect(this.title).toHaveText('Products');
   }
 
-  async addBackpackToCart() {
-    await this.addBackpackButton.click();
+  addButtonForItem(itemName: string) {
+    return this.page
+      .locator('.inventory_item')
+      .filter({ has: this.page.getByText(itemName, { exact: true }) })
+      .getByRole('button', { name: 'Add to cart' });
   }
 
-  async openCart() {
-    await this.cartLink.click();
-    await expect(this.page).toHaveURL(/cart/);
+  async goto() {
+    await this.page.goto('/inventory.html');
+    await this.expectLoaded();
+  }
+
+  async addItemToCart(itemName: string) {
+    await this.addButtonForItem(itemName).click();
+  }
+
+  async addBackpackToCart() {
+    await this.addItemToCart('Sauce Labs Backpack');
   }
 
   async sortByNameAscending() {
     await this.sortSelect.selectOption('az');
   }
 
+  async sortByPriceLowToHigh() {
+    await this.sortSelect.selectOption('lohi');
+  }
+
+  async sortByPriceHighToLow() {
+    await this.sortSelect.selectOption('hilo');
+  }
+
   async getVisibleProductNames() {
     return this.inventoryItemNames.allTextContents();
   }
 
-  async expectCartContainsItem(itemName: string) {
-    await expect(this.inventoryItemNames).toContainText(itemName);
+  async getVisibleProductPrices() {
+    const prices = await this.inventoryItemPrices.allTextContents();
+    return prices.map((price) => Number(price.replace('$', '')));
   }
 }

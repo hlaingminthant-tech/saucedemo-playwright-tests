@@ -6,16 +6,22 @@
   "scripts": {
     "test": "playwright test",
     "test:headed": "playwright test --headed",
-    "test:failure-demo": "playwright test tests/failure-demo.spec.ts",
+    "test:smoke": "playwright test --grep @smoke",
+    "test:regression": "playwright test --grep @regression",
+    "test:ui": "playwright test --grep-invert @api",
+    "test:api": "playwright test --grep @api",
+    "test:visual": "playwright test --grep @visual",
+    "test:failure-demo": "playwright test tests/demo/failure-reporting.spec.ts",
     "report": "playwright show-report",
-    "install-browsers": "npx playwright install",
-    "ci": "npm ci && npx playwright install && npx playwright test --reporter=html"
+    "install-browsers": "playwright install",
+    "ci": "playwright test"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {
+    "@axe-core/playwright": "^4.11.3",
     "@playwright/test": "^1.60.0",
     "@types/node": "^25.6.0"
   }

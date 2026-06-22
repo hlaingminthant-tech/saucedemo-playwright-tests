@@ -1,5 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
+const baseURL = process.env.BASE_URL ?? 'https://www.saucedemo.com';
+
 /**
  * Read environment variables from file.
  * https://github.com/motdotla/dotenv
@@ -11,22 +13,15 @@ import { defineConfig, devices } from '@playwright/test';
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
-const baseURL = process.env.BASE_URL ?? 'https://www.saucedemo.com';
-
 export default defineConfig({
   testDir: './tests',
+  testIgnore: '**/demo/**',
+  timeout: 60000,
   /* Run tests in files in parallel */
   fullyParallel: true,
-  retries: 1,
+  retries: process.env.CI ? 2 : 0,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: [
-    ['html'],
-    ['json', { outputFile: 'test-results/results.json' }],
-    ['junit', { outputFile: 'test-results/junit.xml' }],
-    ['list'],
-    ['allure-playwright'],
-    ...(process.env.CI ? [['github']] : []),
-  ],
+  reporter: 'html',
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     baseURL,
@@ -34,26 +29,33 @@ export default defineConfig({
     navigationTimeout: 30000, // page load gets 30s
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
+    /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
   },
-  /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   outputDir: 'test-results/artifacts',
 
   /* Configure projects for major browsers */
   projects: [
     {
+      name: 'setup',
+      testMatch: /.*\.setup\.ts/,
+    },
+    {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
+      dependencies: ['setup'],
     },
 
     {
       name: 'firefox',
       use: { ...devices['Desktop Firefox'] },
+      dependencies: ['setup'],
     },
 
     {
       name: 'webkit',
       use: { ...devices['Desktop Safari'] },
+      dependencies: ['setup'],
     },
 
     /* Test against mobile viewports. */

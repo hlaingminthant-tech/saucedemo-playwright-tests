@@ -7,30 +7,36 @@ export class CartPage {
     return this.page.locator('.title');
   }
 
-  get cartItems() {
-    return this.page.locator('.cart_item');
+  get inventoryItemNames() {
+    return this.page.locator('.inventory_item_name');
   }
 
   get checkoutButton() {
-    return this.page.getByRole('button', { name: 'Checkout' });
+    return this.page.locator('#checkout');
+  }
+
+  removeButtonForItem(itemName: string) {
+    return this.page
+      .locator('.cart_item')
+      .filter({ has: this.page.getByText(itemName, { exact: true }) })
+      .getByRole('button', { name: 'Remove' });
   }
 
   async expectLoaded() {
-    await expect(this.page).toHaveURL(/cart/);
-    await expect(this.checkoutButton).toBeVisible();
+    await expect(this.title).toHaveText('Your Cart');
+  }
+
+  async expectContainsItem(itemName: string) {
+    await expect(this.inventoryItemNames).toContainText(itemName);
   }
 
   async removeItem(itemName: string) {
-    const item = this.page.locator(`.cart_item:has-text("${itemName}")`);
-    await item.getByRole('button', { name: 'Remove' }).click();
+    await this.removeButtonForItem(itemName).click();
+    await expect(this.inventoryItemNames.filter({ hasText: itemName })).toHaveCount(0);
   }
 
-  async expectItemPresent(itemName: string) {
-    await expect(this.cartItems).toContainText(itemName);
-  }
-
-  async openCheckout() {
+  async startCheckout() {
     await this.checkoutButton.click();
-    await expect(this.page).toHaveURL(/checkout/);
+    await expect(this.page).toHaveURL(/checkout-step-one/);
   }
 }
