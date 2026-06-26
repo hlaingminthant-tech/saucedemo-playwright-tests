@@ -1,48 +1,34 @@
-// Reusable test data for UI and setup specs.
-export const UsersFactory = {
-  standard() {
-    return { username: 'standard_user', password: 'secret_sauce' };
-  },
-  lockedOut() {
-    return { username: 'locked_out_user', password: 'secret_sauce' };
-  },
-  wrongPassword() {
-    return { username: 'standard_user', password: 'wrong_password' };
-  },
-  missingUsername() {
-    return { username: '', password: 'secret_sauce' };
-  },
-  // generate a deterministic test user when needed
-  generated(overrides?: Partial<{ username: string; password: string }>) {
-    const base = { username: `user_${Date.now()}`, password: 'auto_pass' };
-    return { ...base, ...(overrides || {}) };
-  },
+import type { CheckoutCustomer } from '../../pages/CheckoutPage';
+
+export type UserCredentials = {
+  username: string;
+  password: string;
 };
 
-export const ProductsFactory = {
+export const USERS = {
+  standard: { username: 'standard_user', password: 'secret_sauce' },
+  lockedOut: { username: 'locked_out_user', password: 'secret_sauce' },
+  wrongPassword: { username: 'standard_user', password: 'wrong_password' },
+  missingUsername: { username: '', password: 'secret_sauce' },
+} as const satisfies Record<string, UserCredentials>;
+
+export const PRODUCTS = {
   backpack: 'Sauce Labs Backpack',
-};
+} as const;
 
-export const CheckoutFactory = {
-  validCustomer() {
-    return {
-      firstName: 'QA',
-      lastName: 'Automation',
-      postalCode: '10110',
-    };
-  },
-};
+export const VALID_CHECKOUT_CUSTOMER = {
+  firstName: 'QA',
+  lastName: 'Automation',
+  postalCode: '10110',
+} as const satisfies CheckoutCustomer;
 
-export const ValidationMessages = {
+export function buildCheckoutCustomer(overrides: Partial<CheckoutCustomer> = {}): CheckoutCustomer {
+  return { ...VALID_CHECKOUT_CUSTOMER, ...overrides };
+}
+
+export const VALIDATION_MESSAGES = {
   lockedOut: 'locked out',
   wrongPassword: 'Username and password do not match',
   missingUsername: 'Username is required',
   missingFirstName: 'First Name is required',
-};
-
-export default {
-  UsersFactory,
-  ProductsFactory,
-  CheckoutFactory,
-  ValidationMessages,
 };

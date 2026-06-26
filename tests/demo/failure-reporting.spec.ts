@@ -1,21 +1,13 @@
-import { test, expect } from '@playwright/test';
-import { LoginPage } from '../../pages/LoginPage';
-import { InventoryPage } from '../../pages/InventoryPage';
-import { HeaderComponent } from '../../pages/components/HeaderComponent';
-import { UsersFactory } from '../support/test-data';
+import { publicTest as test, expect } from '../support/fixtures';
+import { PRODUCTS, USERS } from '../support/test-data';
 
 test.describe('Reporting demo', () => {
-  test('fails: missing UI state is surfaced in the report', async ({ page }, testInfo) => {
-    const loginPage = new LoginPage(page);
-    const header = new HeaderComponent(page);
-    const user = UsersFactory.standard();
-
+  test('fails: missing UI state is surfaced in the report', async ({ header, inventoryPage, loginPage }, testInfo) => {
     await loginPage.goto();
-    await loginPage.login(user.username, user.password);
+    await loginPage.login(USERS.standard.username, USERS.standard.password);
 
-    const inventoryPage = new InventoryPage(page);
     await inventoryPage.expectLoaded();
-    await inventoryPage.addBackpackToCart();
+    await inventoryPage.addItemToCart(PRODUCTS.backpack);
 
     await expect(header.cartBadge).toHaveText('1');
     await testInfo.attach('demo-note', {
@@ -26,15 +18,10 @@ test.describe('Reporting demo', () => {
     await expect(header.cartBadge).toHaveText('2');
   });
 
-  test('flaky-style case retries and lands in the flaky report bucket', async ({ page }, testInfo) => {
-    const loginPage = new LoginPage(page);
-    const header = new HeaderComponent(page);
-    const user = UsersFactory.standard();
-
+  test('flaky-style case retries and lands in the flaky report bucket', async ({ header, inventoryPage, loginPage, page }, testInfo) => {
     await loginPage.goto();
-    await loginPage.login(user.username, user.password);
+    await loginPage.login(USERS.standard.username, USERS.standard.password);
 
-    const inventoryPage = new InventoryPage(page);
     await inventoryPage.expectLoaded();
 
     await testInfo.attach('demo-note', {
@@ -46,21 +33,17 @@ test.describe('Reporting demo', () => {
       await expect(page.getByRole('heading', { name: 'This heading does not exist' })).toBeVisible();
     }
 
-    await inventoryPage.addBackpackToCart();
+    await inventoryPage.addItemToCart(PRODUCTS.backpack);
     await expect(header.cartBadge).toHaveText('1');
   });
 
-  test('timeout-style case waits for a missing element', async ({ page }, testInfo) => {
-    const loginPage = new LoginPage(page);
-    const user = UsersFactory.standard();
-
+  test('timeout-style case waits for a missing element', async ({ inventoryPage, loginPage, page }, testInfo) => {
     await loginPage.goto();
-    await loginPage.login(user.username, user.password);
+    await loginPage.login(USERS.standard.username, USERS.standard.password);
 
-    const inventoryPage = new InventoryPage(page);
     await inventoryPage.expectLoaded();
 
-    await testInfo.attach('flaky-note', {
+    await testInfo.attach('timeout-note', {
       body: 'This case demonstrates a timeout failure when an expected element never appears.',
       contentType: 'text/plain',
     });

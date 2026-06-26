@@ -11,7 +11,8 @@
     "test:ui": "playwright test --grep-invert @api",
     "test:api": "playwright test --grep @api",
     "test:visual": "playwright test --grep @visual",
-    "test:failure-demo": "playwright test tests/demo/failure-reporting.spec.ts",
+    "typecheck": "tsc --noEmit",
+    "test:failure-demo": "playwright test --config=playwright.demo.config.ts",
     "report": "playwright show-report",
     "install-browsers": "playwright install",
     "ci": "playwright test"
@@ -23,6 +24,7 @@
   "devDependencies": {
     "@axe-core/playwright": "^4.11.3",
     "@playwright/test": "^1.60.0",
-    "@types/node": "^25.6.0"
+    "@types/node": "^25.6.0",
+    "typescript": "^6.0.3"
   }
 }

@@ -30,7 +30,9 @@ jobs:
         run: npm ci
 
       - name: Install Playwright browser
-        run: npx playwright install --with-deps ${{ matrix.project }}
+        # The shared authentication setup uses Playwright's default (Chromium)
+        # browser before the selected project starts.
+        run: npx playwright install --with-deps chromium ${{ matrix.project }}
 
       - name: Show linked release context
         if: github.event_name == 'repository_dispatch'
@@ -39,7 +41,10 @@ jobs:
           echo "Release tag: ${{ github.event.client_payload.release_tag }}"
 
       - name: Run Playwright tests
-        run: npx playwright test --project=${{ matrix.project }}
+        # Visual baselines are platform-specific and this repository currently
+        # stores Windows snapshots. Keep this Ubuntu job focused on functional
+        # coverage rather than generating unreviewed Linux baselines in CI.
+        run: npx playwright test --project=${{ matrix.project }} --grep-invert "@visual"
 
       - name: Upload Playwright HTML report
         uses: actions/upload-artifact@v4

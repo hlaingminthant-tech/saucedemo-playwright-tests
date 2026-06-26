@@ -1,45 +1,35 @@
 import { test, expect } from '../support/fixtures';
-import { ProductsFactory } from '../support/test-data';
-import { HeaderComponent } from '../../pages/components/HeaderComponent';
-import { CartPage } from '../../pages/CartPage';
+import { PRODUCTS } from '../support/test-data';
+
+function expectSorted<T>(values: T[], compare: (left: T, right: T) => number): void {
+  expect(values).toEqual([...values].sort(compare));
+}
 
 test.describe('Inventory flow @regression', () => {
-  test('adds a product to cart and shows the badge', async ({ page, inventoryPage }) => {
-    const header = new HeaderComponent(page);
-    const cartPage = new CartPage(page);
-
-    await inventoryPage.addBackpackToCart();
+  test('adds a product to cart and shows the badge', async ({ cartPage, header, inventoryPage }) => {
+    await inventoryPage.addItemToCart(PRODUCTS.backpack);
 
     await expect(header.cartBadge).toHaveText('1');
 
     await header.openCart();
-    await cartPage.expectContainsItem(ProductsFactory.backpack);
+    await cartPage.expectContainsItem(PRODUCTS.backpack);
   });
 
   test('sorts products alphabetically', async ({ inventoryPage }) => {
-    await inventoryPage.sortByNameAscending();
+    await inventoryPage.sortProductsBy('az');
 
-    const productNames = await inventoryPage.getVisibleProductNames();
-    const sortedNames = [...productNames].sort((left, right) => left.localeCompare(right));
-
-    expect(productNames).toEqual(sortedNames);
+    expectSorted(await inventoryPage.getVisibleProductNames(), (left, right) => left.localeCompare(right));
   });
 
   test('sorts products by price from low to high', async ({ inventoryPage }) => {
-    await inventoryPage.sortByPriceLowToHigh();
+    await inventoryPage.sortProductsBy('lohi');
 
-    const prices = await inventoryPage.getVisibleProductPrices();
-    const sortedPrices = [...prices].sort((left, right) => left - right);
-
-    expect(prices).toEqual(sortedPrices);
+    expectSorted(await inventoryPage.getVisibleProductPrices(), (left, right) => left - right);
   });
 
   test('sorts products by price from high to low', async ({ inventoryPage }) => {
-    await inventoryPage.sortByPriceHighToLow();
+    await inventoryPage.sortProductsBy('hilo');
 
-    const prices = await inventoryPage.getVisibleProductPrices();
-    const sortedPrices = [...prices].sort((left, right) => right - left);
-
-    expect(prices).toEqual(sortedPrices);
+    expectSorted(await inventoryPage.getVisibleProductPrices(), (left, right) => right - left);
   });
 });

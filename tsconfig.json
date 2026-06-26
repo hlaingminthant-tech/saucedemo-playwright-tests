@@ -10,7 +10,7 @@
     "strict": true
   },
   "include": [
-    "playwright.config.ts",
+    "playwright*.config.ts",
     "pages/**/*.ts",
     "tests/**/*.ts"
   ]

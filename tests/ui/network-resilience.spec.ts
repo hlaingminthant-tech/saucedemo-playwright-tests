@@ -1,22 +1,16 @@
-import { expect, test } from '@playwright/test';
-import { InventoryPage } from '../../pages/InventoryPage';
-import { LoginPage } from '../../pages/LoginPage';
-import { ProductsFactory, UsersFactory } from '../support/test-data';
+import { expect, publicTest as test } from '../support/fixtures';
+import { PRODUCTS, USERS } from '../support/test-data';
 
 test.describe('UI network mocking @regression', () => {
-  test('inventory remains usable when product images fail', async ({ page }) => {
+  test('inventory remains usable when product images fail', async ({ header, inventoryPage, loginPage, page }) => {
     await page.route('**/*sauce-backpack*', (route) => route.abort());
 
-    const loginPage = new LoginPage(page);
-    const inventoryPage = new InventoryPage(page);
-    const user = UsersFactory.standard();
-
     await loginPage.goto();
-    await loginPage.login(user.username, user.password);
+    await loginPage.login(USERS.standard.username, USERS.standard.password);
     await inventoryPage.expectLoaded();
 
-    await expect(page.getByText(ProductsFactory.backpack)).toBeVisible();
-    await inventoryPage.addItemToCart(ProductsFactory.backpack);
-    await expect(page.locator('.shopping_cart_badge')).toHaveText('1');
+    await expect(page.getByText(PRODUCTS.backpack)).toBeVisible();
+    await inventoryPage.addItemToCart(PRODUCTS.backpack);
+    await expect(header.cartBadge).toHaveText('1');
   });
 });

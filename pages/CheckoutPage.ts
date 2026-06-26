@@ -1,4 +1,4 @@
-import { expect, Page } from '@playwright/test';
+import { expect, Locator, Page } from '@playwright/test';
 
 export type CheckoutCustomer = {
   firstName: string;
@@ -7,62 +7,62 @@ export type CheckoutCustomer = {
 };
 
 export class CheckoutPage {
-  constructor(private page: Page) {}
+  constructor(private readonly page: Page) {}
 
-  get title() {
-    return this.page.locator('.title');
+  get title(): Locator {
+    return this.page.getByTestId('title');
   }
 
-  get firstNameInput() {
-    return this.page.locator('#first-name');
+  get firstNameInput(): Locator {
+    return this.page.getByTestId('firstName');
   }
 
-  get lastNameInput() {
-    return this.page.locator('#last-name');
+  get lastNameInput(): Locator {
+    return this.page.getByTestId('lastName');
   }
 
-  get postalCodeInput() {
-    return this.page.locator('#postal-code');
+  get postalCodeInput(): Locator {
+    return this.page.getByTestId('postalCode');
   }
 
-  get continueButton() {
-    return this.page.locator('#continue');
+  get continueButton(): Locator {
+    return this.page.getByTestId('continue');
   }
 
-  get finishButton() {
-    return this.page.locator('#finish');
+  get finishButton(): Locator {
+    return this.page.getByTestId('finish');
   }
 
-  get errorMessage() {
-    return this.page.locator('[data-test="error"]');
+  get errorMessage(): Locator {
+    return this.page.getByTestId('error');
   }
 
-  get completeHeader() {
-    return this.page.locator('.complete-header');
+  get completeHeader(): Locator {
+    return this.page.getByTestId('complete-header');
   }
 
-  get summaryTotal() {
-    return this.page.locator('.summary_total_label');
+  get summaryTotal(): Locator {
+    return this.page.getByTestId('total-label');
   }
 
-  async fillCustomerInformation(customer: CheckoutCustomer) {
+  async fillCustomerInformation(customer: CheckoutCustomer): Promise<void> {
     await this.firstNameInput.fill(customer.firstName);
     await this.lastNameInput.fill(customer.lastName);
     await this.postalCodeInput.fill(customer.postalCode);
   }
 
-  async continueToOverview() {
+  async continueToOverview(): Promise<void> {
     await this.continueButton.click();
     await expect(this.page).toHaveURL(/checkout-step-two/);
     await expect(this.title).toHaveText('Checkout: Overview');
   }
 
-  async expectValidationMessage(expectedMessage: string) {
+  async expectValidationMessage(expectedMessage: string): Promise<void> {
     await expect(this.errorMessage).toBeVisible();
     await expect(this.errorMessage).toContainText(expectedMessage);
   }
 
-  async finishOrder() {
+  async finishOrder(): Promise<void> {
     await expect(this.summaryTotal).toBeVisible();
     await this.finishButton.click();
     await expect(this.page).toHaveURL(/checkout-complete/);

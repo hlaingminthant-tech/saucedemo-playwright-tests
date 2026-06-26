@@ -1,65 +1,55 @@
-import { expect, Page } from '@playwright/test';
+import { expect, Locator, Page } from '@playwright/test';
+
+export type ProductSortOption = 'az' | 'lohi' | 'hilo';
 
 export class InventoryPage {
-  constructor(private page: Page) {}
+  constructor(private readonly page: Page) {}
 
-  get title() {
-    return this.page.locator('.title');
+  get title(): Locator {
+    return this.page.getByTestId('title');
   }
 
-  get sortSelect() {
-    return this.page.getByRole('combobox');
+  get sortSelect(): Locator {
+    return this.page.getByTestId('product-sort-container');
   }
 
-  get inventoryItemNames() {
-    return this.page.locator('.inventory_item_name');
+  get inventoryItemNames(): Locator {
+    return this.page.getByTestId('inventory-item-name');
   }
 
-  get inventoryItemPrices() {
-    return this.page.locator('.inventory_item_price');
+  get inventoryItemPrices(): Locator {
+    return this.page.getByTestId('inventory-item-price');
   }
 
-  async expectLoaded() {
+  async expectLoaded(): Promise<void> {
     await expect(this.title).toHaveText('Products');
   }
 
-  addButtonForItem(itemName: string) {
+  addButtonForItem(itemName: string): Locator {
     return this.page
       .locator('.inventory_item')
       .filter({ has: this.page.getByText(itemName, { exact: true }) })
       .getByRole('button', { name: 'Add to cart' });
   }
 
-  async goto() {
+  async goto(): Promise<void> {
     await this.page.goto('/inventory.html');
     await this.expectLoaded();
   }
 
-  async addItemToCart(itemName: string) {
+  async addItemToCart(itemName: string): Promise<void> {
     await this.addButtonForItem(itemName).click();
   }
 
-  async addBackpackToCart() {
-    await this.addItemToCart('Sauce Labs Backpack');
+  async sortProductsBy(option: ProductSortOption): Promise<void> {
+    await this.sortSelect.selectOption(option);
   }
 
-  async sortByNameAscending() {
-    await this.sortSelect.selectOption('az');
-  }
-
-  async sortByPriceLowToHigh() {
-    await this.sortSelect.selectOption('lohi');
-  }
-
-  async sortByPriceHighToLow() {
-    await this.sortSelect.selectOption('hilo');
-  }
-
-  async getVisibleProductNames() {
+  async getVisibleProductNames(): Promise<string[]> {
     return this.inventoryItemNames.allTextContents();
   }
 
-  async getVisibleProductPrices() {
+  async getVisibleProductPrices(): Promise<number[]> {
     const prices = await this.inventoryItemPrices.allTextContents();
     return prices.map((price) => Number(price.replace('$', '')));
   }

@@ -1,41 +1,41 @@
-import { expect, Page } from '@playwright/test';
+import { expect, Locator, Page } from '@playwright/test';
 
 export class CartPage {
-  constructor(private page: Page) {}
+  constructor(private readonly page: Page) {}
 
-  get title() {
-    return this.page.locator('.title');
+  get title(): Locator {
+    return this.page.getByTestId('title');
   }
 
-  get inventoryItemNames() {
-    return this.page.locator('.inventory_item_name');
+  get inventoryItemNames(): Locator {
+    return this.page.getByTestId('inventory-item-name');
   }
 
-  get checkoutButton() {
-    return this.page.locator('#checkout');
+  get checkoutButton(): Locator {
+    return this.page.getByTestId('checkout');
   }
 
-  removeButtonForItem(itemName: string) {
+  removeButtonForItem(itemName: string): Locator {
     return this.page
       .locator('.cart_item')
       .filter({ has: this.page.getByText(itemName, { exact: true }) })
       .getByRole('button', { name: 'Remove' });
   }
 
-  async expectLoaded() {
+  async expectLoaded(): Promise<void> {
     await expect(this.title).toHaveText('Your Cart');
   }
 
-  async expectContainsItem(itemName: string) {
+  async expectContainsItem(itemName: string): Promise<void> {
     await expect(this.inventoryItemNames).toContainText(itemName);
   }
 
-  async removeItem(itemName: string) {
+  async removeItem(itemName: string): Promise<void> {
     await this.removeButtonForItem(itemName).click();
     await expect(this.inventoryItemNames.filter({ hasText: itemName })).toHaveCount(0);
   }
 
-  async startCheckout() {
+  async startCheckout(): Promise<void> {
     await this.checkoutButton.click();
     await expect(this.page).toHaveURL(/checkout-step-one/);
   }

@@ -1,30 +1,30 @@
-import { expect, Page } from '@playwright/test';
+import { expect, Locator, Page } from '@playwright/test';
 
 export class HeaderComponent {
-  constructor(private page: Page) {}
+  constructor(private readonly page: Page) {}
 
-  get cartLink() {
-    return this.page.locator('.shopping_cart_link');
+  get cartLink(): Locator {
+    return this.page.getByTestId('shopping-cart-link');
   }
 
-  get cartBadge() {
-    return this.page.locator('.shopping_cart_badge');
+  get cartBadge(): Locator {
+    return this.page.getByTestId('shopping-cart-badge');
   }
 
-  get menuButton() {
-    return this.page.locator('#react-burger-menu-btn');
+  get menuButton(): Locator {
+    return this.page.getByRole('button', { name: 'Open Menu' });
   }
 
-  get logoutLink() {
-    return this.page.locator('#logout_sidebar_link');
+  get logoutLink(): Locator {
+    return this.page.getByTestId('logout-sidebar-link');
   }
 
-  async openCart() {
+  async openCart(): Promise<void> {
     await this.cartLink.click();
     await expect(this.page).toHaveURL(/cart/);
   }
 
-  async logout() {
+  async logout(): Promise<void> {
     await this.menuButton.click();
     await this.logoutLink.click();
     await expect(this.page).toHaveURL('/');

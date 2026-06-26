@@ -1,31 +1,27 @@
-import { test, expect } from '@playwright/test';
-import { LoginPage } from '../../pages/LoginPage';
-import { UsersFactory, ValidationMessages } from '../support/test-data';
+import { publicTest as test, expect } from '../support/fixtures';
+import { USERS, VALIDATION_MESSAGES } from '../support/test-data';
 
 const invalidLoginCases = [
   {
     name: 'locked out user',
-    username: UsersFactory.lockedOut().username,
-    password: UsersFactory.lockedOut().password,
-    message: ValidationMessages.lockedOut,
+    credentials: USERS.lockedOut,
+    message: VALIDATION_MESSAGES.lockedOut,
   },
   {
     name: 'wrong password',
-    username: UsersFactory.wrongPassword().username,
-    password: UsersFactory.wrongPassword().password,
-    message: ValidationMessages.wrongPassword,
+    credentials: USERS.wrongPassword,
+    message: VALIDATION_MESSAGES.wrongPassword,
   },
   {
     name: 'missing username',
-    username: UsersFactory.missingUsername().username,
-    password: UsersFactory.missingUsername().password,
-    message: ValidationMessages.missingUsername,
+    credentials: USERS.missingUsername,
+    message: VALIDATION_MESSAGES.missingUsername,
   },
 ] as const;
 
 test.describe('Login functionality @smoke', () => {
-  test('login page displays the expected entry points', async ({ page }) => {
-    await page.goto('/');
+  test('login page displays the expected entry points', async ({ loginPage, page }) => {
+    await loginPage.goto();
 
     await expect(page).toHaveTitle(/Swag Labs/);
     await expect(page.getByPlaceholder('Username')).toBeVisible();
@@ -33,16 +29,13 @@ test.describe('Login functionality @smoke', () => {
     await expect(page.getByRole('button', { name: 'Login' })).toBeVisible();
   });
 
-  test('standard user can log in successfully', async ({ page }) => {
-    const loginPage = new LoginPage(page);
-
+  test('standard user can log in successfully', async ({ loginPage, page }) => {
     await test.step('Open the login page', async () => {
       await loginPage.goto();
     });
 
     await test.step('Sign in with valid credentials', async () => {
-      const std = UsersFactory.standard();
-      await loginPage.login(std.username, std.password);
+      await loginPage.login(USERS.standard.username, USERS.standard.password);
     });
 
     await expect(page).toHaveURL(/inventory/);
@@ -50,14 +43,11 @@ test.describe('Login functionality @smoke', () => {
   });
 
   for (const loginCase of invalidLoginCases) {
-    test(`${loginCase.name} sees the right validation message`, async ({ page }) => {
-      const loginPage = new LoginPage(page);
-
+    test(`${loginCase.name} sees the right validation message`, async ({ loginPage }) => {
       await loginPage.goto();
-      await loginPage.login(loginCase.username, loginCase.password);
+      await loginPage.login(loginCase.credentials.username, loginCase.credentials.password);
 
       await loginPage.expectErrorMessage(loginCase.message);
     });
   }
-
 });

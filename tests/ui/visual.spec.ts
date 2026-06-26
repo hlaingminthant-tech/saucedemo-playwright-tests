@@ -17,8 +17,8 @@ test.describe('Visual regression @visual', () => {
     colorScheme: 'light',
   });
 
-  test('login page matches the baseline snapshot', async ({ page }) => {
-    await page.goto('/');
+  test('login page matches the baseline snapshot', async ({ loginPage, page }) => {
+    await loginPage.goto();
 
     await expectPageSnapshot(page, 'login-page.png');
   });
