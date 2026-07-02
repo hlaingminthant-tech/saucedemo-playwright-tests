@@ -257,7 +257,6 @@ Track execution time over time:
 
 ## 📝 Next Steps
 
-- [ ] Add Allure Reports for trend dashboards
 - [ ] Implement performance regression detection
 - [ ] Add visual regression testing (Percy/Applitools)
 - [ ] Create custom Slack dashboard
