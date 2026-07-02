@@ -3,6 +3,7 @@ import { CartPage } from '../../pages/CartPage';
 import { CheckoutPage } from '../../pages/CheckoutPage';
 import { InventoryPage } from '../../pages/InventoryPage';
 import { LoginPage } from '../../pages/LoginPage';
+import { ProductDetailsPage } from '../../pages/ProductDetailsPage';
 import { HeaderComponent } from '../../pages/components/HeaderComponent';
 
 type PageFixtures = {
@@ -11,6 +12,7 @@ type PageFixtures = {
   header: HeaderComponent;
   inventoryPage: InventoryPage;
   loginPage: LoginPage;
+  productDetailsPage: ProductDetailsPage;
 };
 
 const pageTest = base.extend<PageFixtures>({
@@ -29,6 +31,9 @@ const pageTest = base.extend<PageFixtures>({
   loginPage: async ({ page }, use) => {
     await use(new LoginPage(page));
   },
+  productDetailsPage: async ({ page }, use) => {
+    await use(new ProductDetailsPage(page));
+  },
 });
 
 export const publicTest = pageTest;
@@ -41,3 +46,4 @@ export const test = pageTest.extend<{ authenticatedInventory: void }>({
 });
 
 export { expect };
+

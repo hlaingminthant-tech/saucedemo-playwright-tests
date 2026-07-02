@@ -1,6 +1,6 @@
 import { expect, Locator, Page } from '@playwright/test';
 
-export type ProductSortOption = 'az' | 'lohi' | 'hilo';
+export type ProductSortOption = 'az' | 'za' | 'lohi' | 'hilo';
 
 export class InventoryPage {
   constructor(private readonly page: Page) {}
@@ -32,6 +32,17 @@ export class InventoryPage {
       .getByRole('button', { name: 'Add to cart' });
   }
 
+  removeButtonForItem(itemName: string): Locator {
+    return this.page
+      .locator('.inventory_item')
+      .filter({ has: this.page.getByText(itemName, { exact: true }) })
+      .getByRole('button', { name: 'Remove' });
+  }
+
+  productLinkForItem(itemName: string): Locator {
+    return this.page.getByTestId('inventory-item-name').filter({ hasText: itemName });
+  }
+
   async goto(): Promise<void> {
     await this.page.goto('/inventory.html');
     await this.expectLoaded();
@@ -39,6 +50,11 @@ export class InventoryPage {
 
   async addItemToCart(itemName: string): Promise<void> {
     await this.addButtonForItem(itemName).click();
+  }
+
+  async openProductDetails(itemName: string): Promise<void> {
+    await this.productLinkForItem(itemName).click();
+    await expect(this.page).toHaveURL(/inventory-item/);
   }
 
   async sortProductsBy(option: ProductSortOption): Promise<void> {
@@ -54,3 +70,4 @@ export class InventoryPage {
     return prices.map((price) => Number(price.replace('$', '')));
   }
 }
+

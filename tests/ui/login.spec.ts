@@ -50,4 +50,41 @@ test.describe('Login functionality @smoke', () => {
       await loginPage.expectErrorMessage(loginCase.message);
     });
   }
+
+  test('Login rejects a missing password', async ({ loginPage, page }) => {
+    // 1. Open `/`.
+    await loginPage.goto();
+
+    // 2. Enter `standard_user` in the username field.
+    await loginPage.usernameInput.fill(USERS.missingPassword.username);
+
+    // 3. Leave the password field blank.
+    await expect(loginPage.passwordInput).toHaveValue('');
+
+    // 4. Click `Login`.
+    await loginPage.submitButton.click();
+
+    await expect(page).toHaveURL('/');
+    await loginPage.expectErrorMessage(VALIDATION_MESSAGES.missingPassword);
+    await expect(loginPage.usernameInput).toHaveValue(USERS.missingPassword.username);
+    await expect(loginPage.passwordInput).toHaveValue('');
+  });
+
+  test('Login error can be dismissed', async ({ loginPage, page }) => {
+    // 1. Open `/`.
+    await loginPage.goto();
+
+    // 2. Submit invalid credentials.
+    await loginPage.login(USERS.wrongPassword.username, USERS.wrongPassword.password);
+
+    // 3. Verify the validation message is visible.
+    await loginPage.expectErrorMessage(VALIDATION_MESSAGES.wrongPassword);
+
+    // 4. Click the error close button.
+    await page.getByTestId('error-button').click();
+
+    await expect(loginPage.errorMessage).toBeHidden();
+    await loginPage.login(USERS.standard.username, USERS.standard.password);
+    await expect(page).toHaveURL(/inventory/);
+  });
 });

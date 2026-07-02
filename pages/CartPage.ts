@@ -15,6 +15,10 @@ export class CartPage {
     return this.page.getByTestId('checkout');
   }
 
+  get continueShoppingButton(): Locator {
+    return this.page.getByTestId('continue-shopping');
+  }
+
   removeButtonForItem(itemName: string): Locator {
     return this.page
       .locator('.cart_item')
@@ -27,12 +31,17 @@ export class CartPage {
   }
 
   async expectContainsItem(itemName: string): Promise<void> {
-    await expect(this.inventoryItemNames).toContainText(itemName);
+    await expect(this.inventoryItemNames.filter({ hasText: itemName })).toHaveCount(1);
   }
 
   async removeItem(itemName: string): Promise<void> {
     await this.removeButtonForItem(itemName).click();
     await expect(this.inventoryItemNames.filter({ hasText: itemName })).toHaveCount(0);
+  }
+
+  async continueShopping(): Promise<void> {
+    await this.continueShoppingButton.click();
+    await expect(this.page).toHaveURL(/inventory/);
   }
 
   async startCheckout(): Promise<void> {

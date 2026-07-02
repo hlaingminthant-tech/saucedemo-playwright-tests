@@ -33,6 +33,10 @@ export class CheckoutPage {
     return this.page.getByTestId('finish');
   }
 
+  get cancelButton(): Locator {
+    return this.page.getByTestId('cancel');
+  }
+
   get errorMessage(): Locator {
     return this.page.getByTestId('error');
   }
@@ -43,6 +47,22 @@ export class CheckoutPage {
 
   get summaryTotal(): Locator {
     return this.page.getByTestId('total-label');
+  }
+
+  get inventoryItemNames(): Locator {
+    return this.page.getByTestId('inventory-item-name');
+  }
+
+  get inventoryItemPrices(): Locator {
+    return this.page.getByTestId('inventory-item-price');
+  }
+
+  get itemSubtotal(): Locator {
+    return this.page.getByTestId('subtotal-label');
+  }
+
+  get taxLabel(): Locator {
+    return this.page.getByTestId('tax-label');
   }
 
   async fillCustomerInformation(customer: CheckoutCustomer): Promise<void> {
@@ -62,6 +82,11 @@ export class CheckoutPage {
     await expect(this.errorMessage).toContainText(expectedMessage);
   }
 
+  async cancelCheckout(): Promise<void> {
+    await this.cancelButton.click();
+    await expect(this.page).toHaveURL(/cart/);
+  }
+
   async finishOrder(): Promise<void> {
     await expect(this.summaryTotal).toBeVisible();
     await this.finishButton.click();
@@ -69,3 +94,4 @@ export class CheckoutPage {
     await expect(this.completeHeader).toHaveText('Thank you for your order!');
   }
 }
+
